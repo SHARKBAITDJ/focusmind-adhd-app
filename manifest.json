@@ -1,0 +1,30 @@
+{
+  "name": "FocusMind — ADHD & ADD Support",
+  "short_name": "FocusMind",
+  "description": "Free all-in-one ADHD/ADD support app. AI chat, focus timer, meditations & breathing exercises. No fees, ever.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["health", "lifestyle", "productivity"],
+  "shortcuts": [
+    { "name": "Focus Timer", "url": "./index.html#focus", "description": "Start a Pomodoro focus session" },
+    { "name": "Breathing", "url": "./index.html#breathe", "description": "Start a breathing exercise" },
+    { "name": "AI Chat", "url": "./index.html#chat", "description": "Talk to your ADHD companion" }
+  ]
+}
