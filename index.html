@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>FocusMind — ADHD & ADD Support</title>
+<meta name="description" content="Free ADHD/ADD support app: AI chat, focus timer, meditations, breathing exercises. No fees ever.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6366f1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FocusMind">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{
+  --bg:#0f0f1a;--bg2:#1a1a2e;--bg3:#16213e;
+  --card:#1e1e32;--card2:#252540;
+  --pri:#6366f1;--pri-l:#818cf8;--pri-d:#4f46e5;
+  --acc:#a78bfa;--acc2:#34d399;--acc3:#f59e0b;
+  --txt:#e2e8f0;--txt2:#94a3b8;--txt3:#64748b;
+  --border:#2d2d4e;--danger:#ef4444;--success:#22c55e;
+  --nav-h:64px;--hdr-h:56px;
+  --r:14px;--r2:20px;
+  font-size:15px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+button{border:none;cursor:pointer;font-family:inherit}
+input,textarea,select{font-family:inherit;color:var(--txt);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;width:100%;outline:none;font-size:14px}
+input:focus,textarea:focus,select:focus{border-color:var(--pri)}
+/* Layout */
+#app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
+#hdr{height:var(--hdr-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;justify-content:space-between;flex-shrink:0;z-index:10}
+.hdr-logo{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--txt)}
+.hdr-logo span{background:linear-gradient(135deg,var(--pri),var(--acc));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr-actions{display:flex;gap:8px}
+.btn-icon{background:var(--card);color:var(--txt2);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:background .2s}
+.btn-icon:hover{background:var(--card2)}
+#main{flex:1;overflow:hidden;position:relative}
+.panel{position:absolute;inset:0;overflow-y:auto;padding:16px 16px calc(var(--nav-h)+16px);display:none;-webkit-overflow-scrolling:touch}
+.panel.active{display:block}
+.panel::-webkit-scrollbar{width:4px}.panel::-webkit-scrollbar-track{background:transparent}.panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+#nav{height:var(--nav-h);background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;z-index:10}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;background:none;color:var(--txt3);font-size:0.65rem;font-weight:500;transition:color .2s;position:relative}
+.nb .ni{font-size:1.3rem;line-height:1;transition:transform .2s}
+.nb.active{color:var(--pri-l)}.nb.active .ni{transform:scale(1.15)}
+.nb .badge{position:absolute;top:6px;right:calc(50% - 14px);background:var(--danger);color:#fff;font-size:0.6rem;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.card-title{font-size:0.8rem;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.section-title{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+.section-sub{font-size:0.85rem;color:var(--txt2);margin-bottom:16px}
+/* Buttons */
+.btn{padding:12px 20px;border-radius:10px;font-size:0.9rem;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn-pri{background:var(--pri);color:#fff}.btn-pri:hover{background:var(--pri-d)}
+.btn-sec{background:var(--card2);color:var(--txt)}.btn-sec:hover{background:var(--border)}
+.btn-ghost{background:transparent;color:var(--pri-l);border:1px solid var(--border)}.btn-ghost:hover{background:var(--card)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-success{background:var(--success);color:#fff}
+.btn-w{width:100%}
+.btn-sm{padding:8px 14px;font-size:0.8rem}
+/* Tags/Chips */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:500;background:var(--card2);color:var(--txt2);border:1px solid var(--border)}
+.chip-pri{background:rgba(99,102,241,.15);color:var(--pri-l);border-color:rgba(99,102,241,.3)}
+.chip-success{background:rgba(34,197,94,.12);color:#4ade80;border-color:rgba(34,197,94,.25)}
+.chip-warn{background:rgba(245,158,11,.12);color:#fbbf24;border-color:rgba(245,158,11,.25)}
+/* Progress */
+.progress-bar{height:6px;background:var(--card2);border-radius:3px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--pri),var(--acc));border-radius:3px;transition:width .5s ease}
+/* ─── HOME ─── */
+.greeting{font-size:1.4rem;font-weight:700;margin-bottom:4px}
+.mood-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+.mood-btn{background:var(--card2);border:2px solid transparent;border-radius:10px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:1.4rem;cursor:pointer;transition:all .2s}
+.mood-btn.sel{border-color:var(--pri);background:rgba(99,102,241,.15)}
+.mood-btn span{font-size:0.65rem;color:var(--txt2);font-weight:500}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center}
+.stat-val{font-size:1.8rem;font-weight:700;color:var(--pri-l)}
+.stat-lbl{font-size:0.75rem;color:var(--txt2);margin-top:2px}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.quick-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:2rem;cursor:pointer;transition:all .2s;color:var(--txt)}
+.quick-btn:hover{border-color:var(--pri);background:var(--card2)}
+.quick-btn small{font-size:0.75rem;color:var(--txt2);font-weight:500}
+.tip-box{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(167,139,250,.08));border:1px solid rgba(99,102,241,.2);border-radius:var(--r);padding:14px}
+.tip-label{font-size:0.7rem;font-weight:600;color:var(--pri-l);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.tip-text{font-size:0.88rem;color:var(--txt2);line-height:1.5}
+/* ─── FOCUS TIMER ─── */
+.timer-ring-wrap{display:flex;justify-content:center;margin:16px 0}
+.timer-svg{transform:rotate(-90deg)}
+.timer-ring-bg{fill:none;stroke:var(--card2);stroke-width:8}
+.timer-ring-fill{fill:none;stroke:url(#timerGrad);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
+.timer-display{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.timer-time{font-size:2.6rem;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.timer-phase{font-size:0.8rem;color:var(--txt2);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.1em}
+.timer-controls{display:flex;gap:12px;justify-content:center;margin:16px 0}
+.timer-wrap{position:relative;display:inline-block}
+.timer-sessions{display:flex;gap:8px;justify-content:center;margin:12px 0}
+.session-dot{width:12px;height:12px;border-radius:50%;background:var(--card2);transition:background .3s}
+.session-dot.done{background:var(--pri)}
+.session-dot.active{background:var(--acc3)}
+.pomo-modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pomo-mode{padding:8px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;background:var(--card2);color:var(--txt2);border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pomo-mode.active{background:rgba(99,102,241,.2);color:var(--pri-l);border-color:var(--pri)}
+/* ─── TASKS ─── */
+.task-input-row{display:flex;gap:8px;margin-bottom:16px}
+.task-input-row input{flex:1}
+.task-list{display:flex;flex-direction:column;gap:8px}
+.task-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px;transition:all .2s;cursor:pointer}
+.task-item.done{opacity:.5}.task-item.done .task-text{text-decoration:line-through;color:var(--txt3)}
+.task-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:0.8rem}
+.task-item.done .task-check{background:var(--success);border-color:var(--success);color:#fff}
+.task-text{flex:1;font-size:0.9rem}
+.task-del{color:var(--txt3);font-size:0.85rem;padding:4px;flex-shrink:0}
+.task-pri{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pri-high{background:var(--danger)}.pri-med{background:var(--acc3)}.pri-low{background:var(--success)}
+/* ─── BREATHE ─── */
+.breathe-wrap{display:flex;flex-direction:column;align-items:center;padding:20px 0}
+.breathe-circle-wrap{position:relative;margin:20px 0}
+.breathe-circle{width:200px;height:200px;border-radius:50%;border:3px solid rgba(99,102,241,.3);display:flex;align-items:center;justify-content:center;transition:transform 1s ease-in-out,box-shadow 1s ease-in-out,border-color 1s ease}
+.breathe-circle.inhale{transform:scale(1.4);box-shadow:0 0 60px rgba(99,102,241,.4);border-color:var(--pri)}
+.breathe-circle.hold{transform:scale(1.4);box-shadow:0 0 40px rgba(167,139,250,.3);border-color:var(--acc)}
+.breathe-circle.exhale{transform:scale(1);box-shadow:0 0 20px rgba(99,102,241,.1);border-color:rgba(99,102,241,.3)}
+.breathe-circle.hold-out{transform:scale(1);box-shadow:none;border-color:rgba(99,102,241,.15)}
+.breathe-inner{width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.25),rgba(99,102,241,.05));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.breathe-phase{font-size:1rem;font-weight:700;color:var(--pri-l);text-transform:uppercase;letter-spacing:.08em}
+.breathe-count{font-size:2rem;font-weight:700;color:var(--txt);font-variant-numeric:tabular-nums}
+.breathe-patterns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;width:100%}
+.bp-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;cursor:pointer;text-align:left;transition:all .2s;color:var(--txt)}
+.bp-btn.active{border-color:var(--pri);background:rgba(99,102,241,.1)}
+.bp-btn .bp-name{font-size:0.85rem;font-weight:600;margin-bottom:3px}
+.bp-btn .bp-desc{font-size:0.72rem;color:var(--txt2)}
+.breathe-cycles{font-size:0.82rem;color:var(--txt2);text-align:center;margin-bottom:12px}
+.breathe-sound-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+/* ─── MEDITATE ─── */
+.med-list{display:flex;flex-direction:column;gap:10px}
+.med-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .2s}
+.med-card:hover{border-color:var(--pri)}
+.med-card.playing{border-color:var(--pri);background:rgba(99,102,241,.08)}
+.med-header{display:flex;align-items:center;gap:12px}
+.med-icon{font-size:2rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--card2);border-radius:12px}
+.med-info{flex:1}
+.med-title{font-size:0.95rem;font-weight:600;margin-bottom:2px}
+.med-meta{font-size:0.78rem;color:var(--txt2);display:flex;gap:10px}
+.med-btn{background:var(--pri);color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all .2s}
+.med-script{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:0.85rem;color:var(--txt2);line-height:1.7;display:none;max-height:180px;overflow-y:auto}
+.med-script.show{display:block}
+.med-progress{margin-top:10px}
+.sound-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.snd-btn{padding:8px 14px;border-radius:20px;font-size:0.8rem;background:var(--card2);color:var(--txt2);border:1px solid var(--border);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px}
+.snd-btn.active{background:rgba(99,102,241,.2);color:var(--pri-l);border-color:var(--pri)}
+/* ─── CHAT ─── */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - var(--hdr-h) - var(--nav-h) - 32px);max-height:600px}
+.chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-bottom:8px}
+.chat-msgs::-webkit-scrollbar{width:3px}.chat-msgs::-webkit-scrollbar-thumb{background:var(--border)}
+.msg{max-width:82%;padding:10px 14px;border-radius:16px;font-size:0.88rem;line-height:1.55;animation:msgIn .25s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg-ai{background:var(--card2);color:var(--txt);border-bottom-left-radius:4px;align-self:flex-start}
+.msg-user{background:var(--pri);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.msg-ai strong{color:var(--pri-l)}.msg-ai em{color:var(--acc2)}
+.msg-typing{display:flex;gap:5px;align-items:center;padding:12px 16px}
+.dot-typing{width:7px;height:7px;border-radius:50%;background:var(--txt3);animation:typing 1.2s infinite}
+.dot-typing:nth-child(2){animation-delay:.2s}.dot-typing:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,80%,100%{transform:scale(0.7);opacity:.5}40%{transform:scale(1);opacity:1}}
+.chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.sug-btn{padding:6px 12px;border-radius:20px;font-size:0.78rem;background:rgba(99,102,241,.1);color:var(--pri-l);border:1px solid rgba(99,102,241,.25);cursor:pointer;transition:all .2s}
+.sug-btn:hover{background:rgba(99,102,241,.2)}
+.chat-input-row{display:flex;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)}
+.chat-input-row input{flex:1}
+.chat-send{background:var(--pri);color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;transition:background .2s}
+.chat-send:hover{background:var(--pri-d)}
+/* ─── TRACK ─── */
+.mood-history{display:flex;flex-direction:column;gap:6px}
+.mh-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.mh-emoji{font-size:1.4rem}
+.mh-info{flex:1}
+.mh-mood{font-size:0.85rem;font-weight:600}
+.mh-date{font-size:0.72rem;color:var(--txt2)}
+.mh-note{font-size:0.78rem;color:var(--txt2);margin-top:2px;font-style:italic}
+.chart-bars{display:flex;align-items:flex-end;gap:4px;height:80px;padding:0 4px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar{width:100%;border-radius:3px 3px 0 0;background:var(--pri);transition:height .5s ease;min-height:4px}
+.bar-lbl{font-size:0.6rem;color:var(--txt3)}
+/* ─── GOALS ─── */
+.goal-list{display:flex;flex-direction:column;gap:8px}
+.goal-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.goal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.goal-name{font-size:0.9rem;font-weight:600}
+.goal-prog{font-size:0.78rem;color:var(--txt2)}
+.streak-banner{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(251,191,36,.08));border:1px solid rgba(245,158,11,.25);border-radius:var(--r2);padding:20px;text-align:center;margin-bottom:16px}
+.streak-num{font-size:3rem;font-weight:700;color:#fbbf24;line-height:1}
+.streak-lbl{font-size:0.85rem;color:var(--txt2);margin-top:4px}
+.badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.badge-item{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;transition:all .2s}
+.badge-item.earned{border-color:var(--acc3);background:rgba(245,158,11,.08)}
+.badge-emoji{font-size:1.8rem;margin-bottom:6px;opacity:.35}
+.badge-item.earned .badge-emoji{opacity:1}
+.badge-name{font-size:0.65rem;color:var(--txt3);font-weight:500}
+.badge-item.earned .badge-name{color:var(--txt2)}
+.points-display{font-size:1rem;font-weight:700;color:var(--acc3);text-align:center;margin:8px 0}
+/* ─── MODAL ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px;max-height:85vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-size:1.1rem;font-weight:700;margin-bottom:16px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.setting-label{font-size:0.9rem}
+.setting-sub{font-size:0.75rem;color:var(--txt2);margin-top:2px}
+.toggle{width:44px;height:24px;background:var(--card2);border-radius:12px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--pri)}
+.toggle::after{content:"";position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .2s}
+.toggle.on::after{transform:translateX(20px)}
+/* Misc */
+.empty-state{text-align:center;padding:40px 20px;color:var(--txt3)}
+.empty-state .es-icon{font-size:3rem;margin-bottom:12px}
+.empty-state p{font-size:0.85rem;line-height:1.5}
+.fade-in{animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.glow{box-shadow:0 0 20px rgba(99,102,241,.3)}
+.install-banner{background:linear-gradient(135deg,var(--pri),var(--acc));border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:16px;cursor:pointer}
+.install-banner-text{flex:1;font-size:0.85rem;font-weight:500;color:#fff}
+.install-banner-btn{background:rgba(255,255,255,.2);color:#fff;padding:8px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;flex-shrink:0}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- HEADER -->
+<header id="hdr">
+<div class="hdr-logo">🧠 <span>FocusMind</span></div>
+<div class="hdr-actions">
+<button class="btn-icon" id="installBtn" style="display:none" title="Install App">📲</button>
+<button class="btn-icon" id="settingsBtn" title="Settings">⚙️</button>
+</div>
+</header>
+<!-- PANELS -->
+<main id="main">
+<!-- HOME -->
+<section class="panel active" id="panel-home">
+<div id="installBanner" style="display:none" class="install-banner" onclick="App.triggerInstall()">
+<span style="font-size:1.5rem">📲</span>
+<div class="install-banner-text">Install FocusMind on your device for the best experience</div>
+<span class="install-banner-btn">Install</span>
+</div>
+<div class="greeting" id="greeting">Good morning! 👋</div>
+<p style="font-size:.85rem;color:var(--txt2);margin-bottom:16px">How are you feeling today?</p>
+<div class="card">
+<div class="mood-grid">
+<button class="mood-btn" data-mood="5" data-label="Amazing" onclick="App.logMood(5)">😄<span>Amazing</span></button>
+<button class="mood-btn" data-mood="4" data-label="Good" onclick="App.logMood(4)">🙂<span>Good</span></button>
+<button class="mood-btn" data-mood="3" data-label="Okay" onclick="App.logMood(3)">😐<span>Okay</span></button>
+<button class="mood-btn" data-mood="2" data-label="Low" onclick="App.logMood(2)">😔<span>Low</span></button>
+<button class="mood-btn" data-mood="1" data-label="Rough" onclick="App.logMood(1)">😩<span>Rough</span></button>
+</div>
+<input type="text" id="moodNote" placeholder="Add a note (optional)..." style="margin-top:4px" maxlength="120">
+</div>
+<div class="stats-grid" style="margin-bottom:12px">
+<div class="stat-card"><div class="stat-val" id="statStreak">0</div><div class="stat-lbl">Day Streak 🔥</div></div>
+<div class="stat-card"><div class="stat-val" id="statPoints">0</div><div class="stat-lbl">Points ⭐</div></div>
+<div class="stat-card"><div class="stat-val" id="statFocus">0</div><div class="stat-lbl">Focus Sessions</div></div>
+<div class="stat-card"><div class="stat-val" id="statTasks">0</div><div class="stat-lbl">Tasks Done ✅</div></div>
+</div>
+<div class="card-title">Quick Actions</div>
+<div class="quick-grid" style="margin-bottom:16px">
+<button class="quick-btn" onclick="App.navigate('focus')">🎯<small>Focus Timer</small></button>
+<button class="quick-btn" onclick="App.navigate('breathe')">💨<small>Breathe</small></button>
+<button class="quick-btn" onclick="App.navigate('meditate')">🧘<small>Meditate</small></button>
+<button class="quick-btn" onclick="App.navigate('chat')">🤖<small>AI Chat</small></button>
+</div>
+<div class="tip-box">
+<div class="tip-label">💡 ADHD Tip of the Day</div>
+<div class="tip-text" id="dailyTip">Loading...</div>
+</div>
+</section>
+<!-- FOCUS TIMER -->
+<section class="panel" id="panel-focus">
+<div class="section-title">🎯 Focus Timer</div>
+<div class="section-sub">Pomodoro technique helps your ADHD brain stay on track</div>
+<div class="pomo-modes">
+<button class="pomo-mode active" data-mins="25" data-break="5" onclick="Focus.setMode(this,25,5)">Classic (25/5)</button>
+<button class="pomo-mode" data-mins="15" data-break="5" onclick="Focus.setMode(this,15,5)">Short (15/5)</button>
+<button class="pomo-mode" data-mins="50" data-break="10" onclick="Focus.setMode(this,50,10)">Deep (50/10)</button>
+<button class="pomo-mode" data-mins="5" data-break="2" onclick="Focus.setMode(this,5,2)">Micro (5/2)</button>
+</div>
+<div style="text-align:center">
+<div class="timer-ring-wrap">
+<div class="timer-wrap">
+<svg class="timer-svg" width="200" height="200" viewBox="0 0 200 200">
+<defs>
+<linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#6366f1"/>
+<stop offset="100%" stop-color="#a78bfa"/>
+</linearGradient>
+</defs>
+<circle class="timer-ring-bg" cx="100" cy="100" r="88"/>
+<circle class="timer-ring-fill" id="timerRing" cx="100" cy="100" r="88"
+stroke-dasharray="553" stroke-dashoffset="0"/>
+</svg>
+<div class="timer-display">
+<div class="timer-time" id="timerDisplay">25:00</div>
+<div class="timer-phase" id="timerPhase">Focus</div>
+</div>
+</div>
+</div>
+<div class="timer-sessions" id="sessionDots"></div>
+</div>
+<div class="card" style="margin-bottom:12px">
+<label style="font-size:.82rem;color:var(--txt2);display:block;margin-bottom:6px">What are you working on?</label>
+<input type="text" id="focusTask" placeholder="e.g. Write report introduction..." maxlength="80">
+</div>
+<div class="timer-controls">
+<button class="btn btn-sec btn-icon" style="width:50px;height:50px;font-size:1.4rem;border-radius:50%" onclick="Focus.reset()" title="Reset">↺</button>
+<button class="btn btn-pri" id="timerBtn" style="min-width:120px;font-size:1.1rem;height:52px;border-radius:26px" onclick="Focus.toggle()">▶ Start</button>
+<button class="btn btn-sec btn-icon" style="width:50px;height:50px;font-size:1.4rem;border-radius:50%" onclick="Focus.skip()" title="Skip">⏭</button>
+</div>
+<div class="card">
+<div class="card-title">Body Doubling 👥</div>
+<p style="font-size:.83rem;color:var(--txt2);margin-bottom:10px">Feel like someone is working alongside you</p>
+<button class="btn btn-ghost btn-w" onclick="Focus.startBodyDouble()">🧑‍💻 Start Virtual Body Double</button>
+</div>
+</section>
+<!-- TASKS -->
+<section class="panel" id="panel-tasks">
+<div class="section-title">✅ Task Manager</div>
+<div class="section-sub">Break things down into small wins</div>
+<div class="task-input-row">
+<input type="text" id="taskInput" placeholder="Add a task..." maxlength="100" onkeydown="if(event.key==='Enter')Tasks.add()">
+<button class="btn btn-pri" onclick="Tasks.add()">+ Add</button>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+<button class="chip chip-pri" style="cursor:pointer" onclick="Tasks.filterAll()">All</button>
+<button class="chip" style="cursor:pointer" onclick="Tasks.filterPending()">Pending</button>
+<button class="chip chip-success" style="cursor:pointer" onclick="Tasks.filterDone()">Done ✓</button>
+</div>
+<div class="task-list" id="taskList">
+<div class="empty-state"><div class="es-icon">📝</div><p>No tasks yet.<br>Add something you need to do!</p></div>
+</div>
+</section>
+<!-- BREATHE -->
+<section class="panel" id="panel-breathe">
+<div class="section-title">💨 Breathing Exercises</div>
+<div class="section-sub">Regulate your nervous system with guided breathing</div>
+<div class="breathe-patterns">
+<button class="bp-btn active" onclick="Breathe.setPattern(this,'box')" data-pattern="box">
+<div class="bp-name">Box Breathing</div>
+<div class="bp-desc">4-4-4-4 • Calm & focus</div>
+</button>
+<button class="bp-btn" onclick="Breathe.setPattern(this,'478')" data-pattern="478">
+<div class="bp-name">4-7-8 Relax</div>
+<div class="bp-desc">Inhale·Hold·Exhale • Sleep aid</div>
+</button>
+<button class="bp-btn" onclick="Breathe.setPattern(this,'coherent')" data-pattern="coherent">
+<div class="bp-name">Coherent</div>
+<div class="bp-desc">5-5 • Heart rate balance</div>
+</button>
+<button class="bp-btn" onclick="Breathe.setPattern(this,'calm')" data-pattern="calm">
+<div class="bp-name">Calming</div>
+<div class="bp-desc">3-6 • Anxiety relief</div>
+</button>
+</div>
+<div class="breathe-wrap">
+<div class="breathe-circle-wrap">
+<div class="breathe-circle" id="breatheCircle">
+<div class="breathe-inner">
+<div class="breathe-phase" id="breathePhase">Ready</div>
+<div class="breathe-count" id="breatheCount">–</div>
+</div>
+</div>
+</div>
+<div class="breathe-cycles" id="breatheCycles">Cycle 0 of 5</div>
+<div class="breathe-sound-row">
+<button class="snd-btn" id="sndNone" onclick="Breathe.setSound('none')" style="opacity:.7">🔇 Silent</button>
+<button class="snd-btn active" id="sndTone" onclick="Breathe.setSound('tone')">🎵 Guide Tone</button>
+<button class="snd-btn" id="sndRain" onclick="Breathe.setSound('rain')">🌧 Rain</button>
+</div>
+<div style="display:flex;gap:12px;margin-top:4px">
+<button class="btn btn-pri" id="breatheBtn" onclick="Breathe.toggle()">▶ Start</button>
+<button class="btn btn-sec" onclick="Breathe.reset()">↺ Reset</button>
+</div>
+</div>
+</section>
+<!-- MEDITATE -->
+<section class="panel" id="panel-meditate">
+<div class="section-title">🧘 Meditations</div>
+<div class="section-sub">Guided sessions designed for the ADHD brain</div>
+<div class="sound-btns">
+<button class="snd-btn active" id="msBinaural" onclick="Med.setAmbient('binaural')">🎧 Binaural</button>
+<button class="snd-btn" id="msRain" onclick="Med.setAmbient('rain')">🌧 Rain</button>
+<button class="snd-btn" id="msOcean" onclick="Med.setAmbient('ocean')">🌊 Ocean</button>
+<button class="snd-btn" id="msPink" onclick="Med.setAmbient('pink')">〰 Pink Noise</button>
+<button class="snd-btn" id="msNone" onclick="Med.setAmbient('none')">🔇 Silent</button>
+</div>
+<div class="med-list" id="medList"></div>
+</section>
+<!-- AI CHAT -->
+<section class="panel" id="panel-chat">
+<div style="margin-bottom:12px">
+<div class="section-title">🤖 ADHD AI Companion</div>
+<div class="section-sub">Ask anything about ADHD, coping, focus, emotions & more</div>
+</div>
+<div class="chat-wrap">
+<div class="chat-msgs" id="chatMsgs"></div>
+<div class="chat-suggestions" id="chatSugs"></div>
+<div class="chat-input-row">
+<input type="text" id="chatInput" placeholder="Ask about ADHD..." maxlength="200" onkeydown="if(event.key==='Enter')Chat.send()">
+<button class="chat-send" onclick="Chat.send()">↑</button>
+</div>
+</div>
+</section>
+<!-- TRACK -->
+<section class="panel" id="panel-track">
+<div class="section-title">📊 Mood & Behavior Tracker</div>
+<div class="section-sub">Patterns reveal a lot about your ADHD</div>
+<div class="card" style="margin-bottom:12px">
+<div class="card-title">Weekly Mood</div>
+<div class="chart-bars" id="moodChart"></div>
+</div>
+<div class="card">
+<div class="card-title" style="display:flex;justify-content:space-between">
+<span>Mood History</span>
+<button class="btn btn-sm btn-ghost" onclick="Track.clearHistory()" style="padding:2px 10px;font-size:.72rem">Clear</button>
+</div>
+<div class="mood-history" id="moodHistory">
+<div class="empty-state" style="padding:20px"><div class="es-icon">📊</div><p>Log your mood from the Home tab to see history here</p></div>
+</div>
+</div>
+</section>
+<!-- GOALS / REWARDS -->
+<section class="panel" id="panel-goals">
+<div class="section-title">🏆 Goals & Rewards</div>
+<div class="section-sub">ADHD brains thrive on rewards — celebrate every win</div>
+<div class="streak-banner">
+<div class="streak-num" id="goalsStreak">0</div>
+<div class="streak-lbl">Day Streak 🔥 Keep it going!</div>
+<div class="points-display" id="goalsPoints">⭐ 0 points</div>
+</div>
+<div class="card">
+<div class="card-title">Daily Goals</div>
+<div class="goal-list" id="goalList"></div>
+<button class="btn btn-ghost btn-w" style="margin-top:12px" onclick="Goals.reset()">↺ Reset Daily Goals</button>
+</div>
+<div class="card" style="margin-top:12px">
+<div class="card-title">Badges Earned</div>
+<div class="badge-grid" id="badgeGrid"></div>
+</div>
+</section>
+</main>
+<!-- BOTTOM NAV -->
+<nav id="nav">
+<button class="nb active" data-panel="home" onclick="App.navigate('home')"><span class="ni">🏠</span>Home</button>
+<button class="nb" data-panel="focus" onclick="App.navigate('focus')"><span class="ni">🎯</span>Focus</button>
+<button class="nb" data-panel="breathe" onclick="App.navigate('breathe')"><span class="ni">💨</span>Breathe</button>
+<button class="nb" data-panel="meditate" onclick="App.navigate('meditate')"><span class="ni">🧘</span>Meditate</button>
+<button class="nb" data-panel="chat" onclick="App.navigate('chat')"><span class="ni">🤖</span>AI Chat</button>
+<button class="nb" data-panel="track" onclick="App.navigate('track')"><span class="ni">📊</span>Track</button>
+<button class="nb" data-panel="goals" onclick="App.navigate('goals')"><span class="ni">🏆</span>Goals</button>
+</nav>
+</div><!-- /#app -->
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+<div class="modal">
+<div class="modal-handle"></div>
+<div class="modal-title">⚙️ Settings</div>
+<div class="setting-row">
+<div><div class="setting-label">Sounds</div><div class="setting-sub">App sounds & audio feedback</div></div>
+<div class="toggle on" id="toggleSound" onclick="App.toggleSetting('sound',this)"></div>
+</div>
+<div class="setting-row">
+<div><div class="setting-label">Notifications</div><div class="setting-sub">Focus session reminders</div></div>
+<div class="toggle" id="toggleNotif" onclick="App.toggleSetting('notif',this)"></div>
+</div>
+<div class="setting-row">
+<div><div class="setting-label">Timer Sound</div><div class="setting-sub">Bell when timer ends</div></div>
+<div class="toggle on" id="toggleTimerSnd" onclick="App.toggleSetting('timerSound',this)"></div>
+</div>
+<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+<button class="btn btn-danger btn-w btn-sm" onclick="App.clearAllData()">🗑 Clear All Data</button>
+</div>
+<div style="margin-top:24px;text-align:center;font-size:.72rem;color:var(--txt3)">
+FocusMind v1.0 • Free forever • No accounts needed<br>Built with ❤️ for the ADHD community
+</div>
+<button class="btn btn-sec btn-w" style="margin-top:16px" onclick="App.closeModal('settingsModal')">Close</button>
+</div>
+</div>
+<script>
+'use strict';
+// ─── AUDIO ENGINE ───────────────────────────────────────────
+const Audio = {
+  ctx: null, master: null, active: [],
+  init() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.master = this.ctx.createGain();
+      this.master.connect(this.ctx.destination);
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    return this;
+  },
+  stop() {
+    this.active.forEach(n => { try { n.stop?.(); n.disconnect?.(); } catch(e){} });
+    this.active = [];
+  },
+  tone(freq, dur, {type='sine', vol=0.25, rampIn=0.04, rampOut=0.08}={}) {
+    this.init();
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + rampIn);
+    g.gain.setValueAtTime(vol, t + dur - rampOut);
+    g.gain.linearRampToValueAtTime(0, t + dur);
+    osc.connect(g); g.connect(this.master);
+    osc.start(t); osc.stop(t + dur);
+    this.active.push(osc);
+    return osc;
+  },
+  bell(freq=528) {
+    this.init();
+    const t = this.ctx.currentTime;
+    [[freq,0.45,2.5],[freq*2.76,0.12,1.2],[freq*5.4,0.06,0.7]].forEach(([f,v,d])=>{
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      o.type='sine'; o.frequency.value=f;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, t+d);
+      o.connect(g); g.connect(this.master);
+      o.start(t); o.stop(t+d);
+      this.active.push(o);
+    });
+  },
+  success() {
+    [523,659,784,1047].forEach((f,i)=>setTimeout(()=>this.tone(f,.22,{vol:.2}),i*110));
+  },
+  click() { this.tone(880,.04,{type:'square',vol:.07}); },
+  timerEnd() { this.bell(440); setTimeout(()=>this.bell(528),700); setTimeout(()=>this.bell(660),1400); },
+  breathTone(phase) {
+    const map={inhale:[220,350,.25],hold:[350,350,.08],exhale:[350,220,.15],holdOut:[200,200,.05]};
+    const [fs,fe,vol]=map[phase]||[300,300,.1];
+    this.init();
+    const t=this.ctx.currentTime;
+    const o=this.ctx.createOscillator(); const g=this.ctx.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(fs,t); o.frequency.linearRampToValueAtTime(fe,t+0.4);
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.05);
+    g.gain.setValueAtTime(vol,t+0.3); g.gain.linearRampToValueAtTime(0,t+0.4);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t+0.45);
+    this.active.push(o);
+  },
+  _ambient: null, _ambientType: null,
+  startAmbient(type) {
+    this.stopAmbient();
+    this.init();
+    this._ambientType = type;
+    if (type === 'binaural') {
+      const merger = this.ctx.createChannelMerger(2);
+      const g = this.ctx.createGain(); g.gain.value = 0.18;
+      merger.connect(g); g.connect(this.master);
+      const L = this.ctx.createOscillator();
+      const R = this.ctx.createOscillator();
+      const gL = this.ctx.createGain(); gL.gain.value = 1;
+      const gR = this.ctx.createGain(); gR.gain.value = 1;
+      L.type = R.type = 'sine';
+      L.frequency.value = 200; R.frequency.value = 210; // 10Hz alpha
+      L.connect(gL); R.connect(gR);
+      gL.connect(merger,0,0); gR.connect(merger,0,1);
+      L.start(); R.start();
+      this._ambient = [L, R];
+      this.active.push(L, R);
+    } else if (type === 'rain' || type === 'pink' || type === 'ocean') {
+      // Pink noise generator
+      const bufSize = this.ctx.sampleRate * 2;
+      const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0;
+      for(let i=0;i<bufSize;i++){
+        const w=Math.random()*2-1;
+        b0=.99886*b0+w*.0555179; b1=.99332*b1+w*.0750759;
+        b2=.969*b2+w*.153852; b3=.8665*b3+w*.3104856;
+        b4=.55*b4+w*.5329522; b5=-.7616*b5-w*.016898;
+        d[i]=(b0+b1+b2+b3+b4+b5+w*.5362)*0.1;
+      }
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const filt = this.ctx.createBiquadFilter();
+      if (type==='rain') { filt.type='highpass'; filt.frequency.value=800; }
+      else if (type==='ocean') { filt.type='lowpass'; filt.frequency.value=500; }
+      else { filt.type='allpass'; }
+      const g = this.ctx.createGain();
+      g.gain.value = type==='rain' ? 0.12 : type==='ocean' ? 0.15 : 0.09;
+      src.connect(filt); filt.connect(g); g.connect(this.master);
+      src.start();
+      this._ambient = [src];
+      this.active.push(src);
+    }
+  },
+  stopAmbient() {
+    if (this._ambient) {
+      this._ambient.forEach(n=>{ try{n.stop?.();}catch(e){} });
+      this._ambient = null; this._ambientType = null;
+    }
+  },
+  rainActive: false, _rain: null,
+  startRain() {
+    this.init();
+    if (this._rain) return;
+    const bufSize = this.ctx.sampleRate * 3;
+    const buf = this.ctx.createBuffer(2, bufSize, this.ctx.sampleRate);
+    for(let ch=0;ch<2;ch++){
+      const d=buf.getChannelData(ch);
+      for(let i=0;i<bufSize;i++) d[i]=Math.random()*2-1;
+    }
+    const src=this.ctx.createBufferSource(); src.buffer=buf; src.loop=true;
+    const f=this.ctx.createBiquadFilter(); f.type='highpass'; f.frequency.value=1200;
+    const g=this.ctx.createGain(); g.gain.value=0.1;
+    src.connect(f); f.connect(g); g.connect(this.master);
+    src.start(); this._rain=src; this.active.push(src);
+  },
+  stopRain() {
+    if(this._rain){try{this._rain.stop();}catch(e){} this._rain=null;}
+  }
+};
+// ─── STORAGE ─────────────────────────────────────────────────
+const Store = {
+  get(k,def=null){try{const v=localStorage.getItem('fm_'+k);return v!=null?JSON.parse(v):def;}catch{return def;}},
+  set(k,v){try{localStorage.setItem('fm_'+k,JSON.stringify(v));}catch{}},
+  del(k){localStorage.removeItem('fm_'+k)}
+};
+// ─── SETTINGS ────────────────────────────────────────────────
+const Settings = {
+  sound: true, timerSound: true, notif: false,
+  load() {
+    const s = Store.get('settings', {});
+    Object.assign(this, s);
+  },
+  save() { Store.set('settings', {sound:this.sound,timerSound:this.timerSound,notif:this.notif}); }
+};
+// ─── APP ─────────────────────────────────────────────────────
+const App = {
+  currentPanel: 'home',
+  _deferredInstall: null,
+  init() {
+    Settings.load();
+    this.updateGreeting();
+    this.updateStats();
+    Home.showTip();
+    Track.renderChart();
+    Track.renderHistory();
+    Goals.render();
+    Tasks.render();
+    Med.render();
+    Chat.init();
+    Focus.init();
+    this.applySettings();
+    // PWA install
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault(); this._deferredInstall = e;
+      document.getElementById('installBtn').style.display='flex';
+      document.getElementById('installBanner').style.display='flex';
+    });
+    // Handle hash navigation
+    if (location.hash) this.navigate(location.hash.slice(1));
+    // Register SW
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    }
+  },
+  navigate(panel) {
+    const valid = ['home','focus','breathe','meditate','chat','track','goals'];
+    if (!valid.includes(panel)) return;
+    if (this.currentPanel === panel) return;
+    // Stop ambient/breathe if switching away
+    if (this.currentPanel === 'breathe') Breathe.reset();
+    if (this.currentPanel === 'meditate') Med.stopCurrent();
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+    const panelEl = document.getElementById('panel-'+panel);
+    if (panelEl) panelEl.classList.add('active');
+    const navBtn = document.querySelector(`.nb[data-panel="${panel}"]`);
+    if (navBtn) navBtn.classList.add('active');
+    this.currentPanel = panel;
+    location.hash = panel;
+    if (Settings.sound) Audio.click();
+    if (panel === 'track') { Track.renderChart(); Track.renderHistory(); }
+    if (panel === 'goals') Goals.render();
+    if (panel === 'home') this.updateStats();
+  },
+  updateGreeting() {
+    const h = new Date().getHours();
+    const g = h<12?'Good morning':'h<17'?'Good afternoon':'Good evening';
+    const greet = h<12?'Good morning ☀️':h<17?'Good afternoon 🌤':h<21?'Good evening 🌙':'Hello 🌙';
+    document.getElementById('greeting').textContent = greet + '!';
+  },
+  updateStats() {
+    const moods = Store.get('moods',[]);
+    const tasks = Store.get('tasks',[]);
+    const sessions = Store.get('sessions',[]);
+    document.getElementById('statStreak').textContent = this.calcStreak();
+    document.getElementById('statPoints').textContent = Store.get('points',0);
+    document.getElementById('statFocus').textContent = sessions.length;
+    document.getElementById('statTasks').textContent = tasks.filter(t=>t.done).length;
+    document.getElementById('goalsStreak').textContent = this.calcStreak();
+    document.getElementById('goalsPoints').textContent = '⭐ ' + Store.get('points',0) + ' points';
+    document.getElementById('statStreak').textContent = this.calcStreak();
+  },
+  calcStreak() {
+    const moods = Store.get('moods',[]);
+    if (!moods.length) return 0;
+    let streak = 0, d = new Date();
+    d.setHours(0,0,0,0);
+    for (let i=0;i<30;i++) {
+      const ds = d.toDateString();
+      if (moods.find(m=>new Date(m.ts).toDateString()===ds)) { streak++; }
+      else if (i>0) break;
+      d.setDate(d.getDate()-1);
+    }
+    return streak;
+  },
+  addPoints(pts) {
+    const cur = Store.get('points',0);
+    Store.set('points', cur + pts);
+    this.updateStats();
+    Goals.checkBadges();
+  },
+  logMood(val) {
+    const moods = Store.get('moods',[]);
+    const note = document.getElementById('moodNote').value.trim();
+    const labels = {5:'Amazing',4:'Good',3:'Okay',2:'Low',1:'Rough'};
+    moods.push({val, label:labels[val], note, ts: Date.now()});
+    Store.set('moods', moods.slice(-200));
+    document.getElementById('moodNote').value = '';
+    document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('sel'));
+    document.querySelector(`.mood-btn[data-mood="${val}"]`)?.classList.add('sel');
+    this.addPoints(5);
+    if (Settings.sound) Audio.success();
+    this.showToast('Mood logged! +5 pts 🌟');
+    this.checkDailyGoal('mood');
+  },
+  toggleSetting(key, el) {
+    Settings[key] = !Settings[key];
+    el.classList.toggle('on', Settings[key]);
+    Settings.save();
+  },
+  applySettings() {
+    document.getElementById('toggleSound').classList.toggle('on', Settings.sound);
+    document.getElementById('toggleTimerSnd').classList.toggle('on', Settings.timerSound);
+  },
+  closeModal(id) { document.getElementById(id).classList.remove('open'); },
+  openModal(id) { document.getElementById(id).classList.add('open'); },
+  triggerInstall() {
+    if (this._deferredInstall) this._deferredInstall.prompt();
+  },
+  showToast(msg, dur=2500) {
+    let t = document.getElementById('toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id='toast';
+      t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e1e32;color:#e2e8f0;padding:10px 20px;border-radius:20px;font-size:.82rem;z-index:200;border:1px solid #2d2d4e;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:opacity .3s;pointer-events:none';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg; t.style.opacity='1';
+    clearTimeout(t._to);
+    t._to = setTimeout(()=>t.style.opacity='0', dur);
+  },
+  checkDailyGoal(type) { Goals.tick(type); },
+  clearAllData() {
+    if (!confirm('Clear all app data? This cannot be undone.')) return;
+    Object.keys(localStorage).filter(k=>k.startsWith('fm_')).forEach(k=>localStorage.removeItem(k));
+    location.reload();
+  }
+};
+document.getElementById('settingsBtn').onclick = ()=>App.openModal('settingsModal');
+document.querySelectorAll('.modal-overlay').forEach(m=>m.onclick=function(e){if(e.target===this)this.classList.remove('open');});
+// ─── HOME ─────────────────────────────────────────────────────
+const Home = {
+  tips: [
+    "Your ADHD brain craves novelty — try changing your workspace location to boost focus today.",
+    "Body doubling works! Work in a café, library, or virtually with others to boost productivity.",
+    "Exercise produces dopamine naturally — even a 10-min walk can improve focus for hours.",
+    "Externalise your memory: write it down immediately, don't trust your working memory.",
+    "Time blindness is an ADHD symptom, not laziness. Use timers to make time visible.",
+    "The '2-minute rule': if it takes less than 2 minutes, do it right now.",
+    "Hyperfocus is a superpower. Schedule tasks you love to build momentum.",
+    "ADHD brains need more transitions. Give yourself 5 extra minutes between tasks.",
+    "Rejection Sensitive Dysphoria (RSD) is real. Pause before reacting to perceived criticism.",
+    "Sleep is medication for ADHD. Prioritising consistent sleep can reduce symptoms significantly.",
+    "Break tasks into the smallest possible steps. 'Write report' → 'Open document' → 'Type one sentence'.",
+    "The ADHD tax is real — set up automatic payments and reminders to avoid late fees.",
+    "Stimulating background music (like lo-fi or classical) can help ADHD brains focus.",
+    "Dopamine menus work: make a list of quick rewarding activities to choose from when you need a reset.",
+    "ADHD is a difference in executive function, not intelligence. You are not broken.",
+    "Celebrate small wins loudly. Your brain needs those dopamine hits!",
+    "Accountability partners dramatically improve ADHD task completion. Tell someone your goal.",
+    "Routine reduces decision fatigue. The fewer choices in the morning, the better.",
+    "Interest, challenge, novelty, urgency — ADHD brains engage when one of these is present.",
+    "Self-compassion is not weakness. Treating yourself kindly improves ADHD outcomes.",
+  ],
+  showTip() {
+    const idx = Math.floor(Date.now() / 86400000) % this.tips.length;
+    document.getElementById('dailyTip').textContent = this.tips[idx];
+  }
+};
+// ─── FOCUS TIMER ──────────────────────────────────────────────
+const Focus = {
+  workMins: 25, breakMins: 5,
+  totalSecs: 25*60, remaining: 25*60,
+  running: false, onBreak: false,
+  interval: null, sessionCount: 0, maxSessions: 4,
+  bodyDoubleInterval: null,
+  init() { this.updateDisplay(); this.renderDots(); },
+  setMode(btn, work, brk) {
+    document.querySelectorAll('.pomo-mode').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    this.workMins = work; this.breakMins = brk;
+    if (!this.running) { this.reset(); }
+  },
+  toggle() {
+    if (this.running) { this.pause(); } else { this.start(); }
+  },
+  start() {
+    if (this.remaining <= 0) this.reset();
+    App.init && Audio.init();
+    this.running = true;
+    document.getElementById('timerBtn').textContent = '⏸ Pause';
+    this.interval = setInterval(()=>this.tick(), 1000);
+    App.checkDailyGoal('focus_start');
+  },
+  pause() {
+    this.running = false;
+    document.getElementById('timerBtn').textContent = '▶ Resume';
+    clearInterval(this.interval);
+  },
+  reset() {
+    this.pause();
+    this.onBreak = false;
+    this.remaining = this.workMins * 60;
+    this.totalSecs = this.workMins * 60;
+    document.getElementById('timerBtn').textContent = '▶ Start';
+    document.getElementById('timerPhase').textContent = 'Focus';
+    this.updateDisplay();
+    this.updateRing();
+  },
+  skip() {
+    this.phase_complete();
+  },
+  tick() {
+    this.remaining--;
+    this.updateDisplay();
+    this.updateRing();
+    if (this.remaining <= 0) this.phase_complete();
+  },
+  phase_complete() {
+    clearInterval(this.interval);
+    this.running = false;
+    if (Settings.timerSound) Audio.timerEnd();
+    if (!this.onBreak) {
+      this.sessionCount++;
+      this.renderDots();
+      App.addPoints(20);
+      App.showToast('🎉 Focus session done! +20 pts. Take a break!');
+      App.checkDailyGoal('focus');
+      const sessions = Store.get('sessions',[]);
+      sessions.push({ts:Date.now(), mins:this.workMins, task:document.getElementById('focusTask').value});
+      Store.set('sessions', sessions.slice(-500));
+      this.onBreak = true;
+      this.remaining = this.breakMins * 60;
+      this.totalSecs = this.breakMins * 60;
+      document.getElementById('timerPhase').textContent = 'Break ☕';
+      document.getElementById('timerBtn').textContent = '▶ Start Break';
+    } else {
+      App.showToast('Break over! Ready to focus again?');
+      this.onBreak = false;
+      this.remaining = this.workMins * 60;
+      this.totalSecs = this.workMins * 60;
+      document.getElementById('timerPhase').textContent = 'Focus';
+      document.getElementById('timerBtn').textContent = '▶ Start';
+    }
+    this.updateDisplay();
+    this.updateRing();
+  },
+  updateDisplay() {
+    const m = Math.floor(this.remaining/60).toString().padStart(2,'0');
+    const s = (this.remaining%60).toString().padStart(2,'0');
+    document.getElementById('timerDisplay').textContent = m+':'+s;
+  },
+  updateRing() {
+    const circ = 2 * Math.PI * 88;
+    const pct = this.remaining / this.totalSecs;
+    const offset = circ * (1 - pct);
+    document.getElementById('timerRing').style.strokeDashoffset = offset;
+  },
+  renderDots() {
+    const c = document.getElementById('sessionDots');
+    c.innerHTML = '';
+    for(let i=0;i<this.maxSessions;i++){
+      const d=document.createElement('div');
+      d.className='session-dot'+(i<this.sessionCount?' done':i===this.sessionCount?' active':'');
+      c.appendChild(d);
+    }
+  },
+  startBodyDouble() {
+    App.showToast('🧑‍💻 Virtual study buddy joined! Focus together.');
+    if (!this.running) this.start();
+  }
+};
+// ─── TASKS ─────────────────────────────────────────────────────
+const Tasks = {
+  filter: 'all',
+  add() {
+    const inp = document.getElementById('taskInput');
+    const text = inp.value.trim();
+    if (!text) return;
+    const tasks = Store.get('tasks',[]);
+    tasks.push({id:Date.now(), text, done:false, ts:Date.now()});
+    Store.set('tasks', tasks.slice(-200));
+    inp.value='';
+    this.render();
+    App.checkDailyGoal('task_add');
+    if (Settings.sound) Audio.click();
+  },
+  complete(id) {
+    const tasks = Store.get('tasks',[]);
+    const t = tasks.find(t=>t.id===id);
+    if (!t) return;
+    t.done = !t.done;
+    Store.set('tasks', tasks);
+    this.render();
+    if (t.done) {
+      App.addPoints(10);
+      App.showToast('✅ Task done! +10 pts');
+      App.checkDailyGoal('task_done');
+      if (Settings.sound) Audio.success();
+    }
+    App.updateStats();
+  },
+  remove(id) {
+    let tasks = Store.get('tasks',[]);
+    tasks = tasks.filter(t=>t.id!==id);
+    Store.set('tasks', tasks);
+    this.render();
+  },
+  filterAll() { this.filter='all'; this.render(); },
+  filterPending() { this.filter='pending'; this.render(); },
+  filterDone() { this.filter='done'; this.render(); },
+  render() {
+    let tasks = Store.get('tasks',[]);
+    if (this.filter==='pending') tasks=tasks.filter(t=>!t.done);
+    if (this.filter==='done') tasks=tasks.filter(t=>t.done);
+    const list = document.getElementById('taskList');
+    if (!tasks.length) {
+      list.innerHTML='<div class="empty-state"><div class="es-icon">📝</div><p>No tasks here.<br>'+
+        (this.filter==='done'?'Complete some tasks first!':'Add something you need to do!')+'</p></div>';
+      return;
+    }
+    list.innerHTML = tasks.map(t=>`
+      <div class="task-item ${t.done?'done':''}" onclick="Tasks.complete(${t.id})">
+        <div class="task-check">${t.done?'✓':''}</div>
+        <div class="task-text">${t.text.replace(/</g,'&lt;')}</div>
+        <button class="task-del" onclick="event.stopPropagation();Tasks.remove(${t.id})" title="Remove">✕</button>
+      </div>`).join('');
+  }
+};
+// ─── BREATHING ────────────────────────────────────────────────
+const Breathe = {
+  patterns: {
+    box:      {name:'Box',steps:[{phase:'Inhale',dur:4},{phase:'Hold',dur:4},{phase:'Exhale',dur:4},{phase:'Hold',dur:4}]},
+    '478':    {name:'4-7-8',steps:[{phase:'Inhale',dur:4},{phase:'Hold',dur:7},{phase:'Exhale',dur:8}]},
+    coherent: {name:'Coherent',steps:[{phase:'Inhale',dur:5},{phase:'Exhale',dur:5}]},
+    calm:     {name:'Calm',steps:[{phase:'Inhale',dur:3},{phase:'Exhale',dur:6}]}
+  },
+  current: 'box', sound: 'tone',
+  running: false, stepIdx: 0, secLeft: 0, cycle: 0, totalCycles: 5,
+  interval: null,
+  setPattern(btn, key) {
+    document.querySelectorAll('.bp-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    this.current = key;
+    if (!this.running) this.reset();
+  },
+  setSound(type) {
+    this.sound = type;
+    document.querySelectorAll('.breathe-sound-row .snd-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('snd'+type.charAt(0).toUpperCase()+type.slice(1))?.classList.add('active');
+    if (type==='rain' && this.running) Audio.startRain();
+    else if (type!=='rain') Audio.stopRain();
+  },
+  toggle() {
+    if (this.running) this.pause(); else this.start();
+  },
+  start() {
+    Audio.init();
+    if (this.sound==='rain') Audio.startRain();
+    this.running = true;
+    document.getElementById('breatheBtn').textContent = '⏸ Pause';
+    if (this.secLeft===0) {
+      const p = this.patterns[this.current];
+      this.secLeft = p.steps[this.stepIdx].dur;
+    }
+    this.render();
+    this.interval = setInterval(()=>this.tick(), 1000);
+  },
+  pause() {
+    this.running = false;
+    clearInterval(this.interval);
+    document.getElementById('breatheBtn').textContent = '▶ Resume';
+    Audio.stopRain();
+  },
+  reset() {
+    this.pause();
+    this.stepIdx = 0; this.cycle = 0;
+    const p = this.patterns[this.current];
+    this.secLeft = p.steps[0].dur;
+    this.render();
+    document.getElementById('breatheBtn').textContent = '▶ Start';
+    document.getElementById('breatheCircle').className = 'breathe-circle';
+    document.getElementById('breathePhase').textContent = 'Ready';
+    document.getElementById('breatheCount').textContent = '–';
+    document.getElementById('breatheCycles').textContent = 'Cycle 0 of '+this.totalCycles;
+  },
+  tick() {
+    this.secLeft--;
+    if (this.secLeft <= 0) {
+      const p = this.patterns[this.current];
+      this.stepIdx = (this.stepIdx + 1) % p.steps.length;
+      if (this.stepIdx === 0) {
+        this.cycle++;
+        if (this.cycle >= this.totalCycles) {
+          this.complete(); return;
+        }
+      }
+      this.secLeft = p.steps[this.stepIdx].dur;
+      this.render();
+    } else {
+      document.getElementById('breatheCount').textContent = this.secLeft;
+      document.getElementById('breatheCycles').textContent = 'Cycle '+(this.cycle+1)+' of '+this.totalCycles;
+    }
+  },
+  render() {
+    const p = this.patterns[this.current];
+    const step = p.steps[this.stepIdx];
+    const phaseMap = {Inhale:'inhale',Hold:'hold',Exhale:'exhale'};
+    const circClass = phaseMap[step.phase] || (this.stepIdx>1?'hold-out':'hold');
+    document.getElementById('breatheCircle').className = 'breathe-circle ' + circClass;
+    document.getElementById('breathePhase').textContent = step.phase.toUpperCase();
+    document.getElementById('breatheCount').textContent = this.secLeft;
+    document.getElementById('breatheCycles').textContent = 'Cycle '+(this.cycle+1)+' of '+this.totalCycles;
+    if (this.sound==='tone' && Settings.sound) {
+      const phaseKey = step.phase==='Inhale'?'inhale':step.phase==='Exhale'?'exhale':this.stepIdx===1?'hold':'holdOut';
+      Audio.breathTone(phaseKey);
+    }
+  },
+  complete() {
+    this.pause();
+    this.cycle = 0; this.stepIdx = 0;
+    const p = this.patterns[this.current];
+    this.secLeft = p.steps[0].dur;
+    document.getElementById('breatheCircle').className = 'breathe-circle';
+    document.getElementById('breathePhase').textContent = 'Done ✓';
+    document.getElementById('breatheCount').textContent = '🌟';
+    document.getElementById('breatheBtn').textContent = '▶ Again';
+    if (Settings.sound) Audio.success();
+    App.addPoints(15);
+    App.showToast('🌬 Breathing complete! +15 pts');
+    App.checkDailyGoal('breathe');
+  }
+};
+// ─── MEDITATIONS ──────────────────────────────────────────────
+const Med = {
+  ambient: 'binaural',
+  playing: null, playInterval: null,
+  sessions: [
+    {
+      id:'quick', icon:'⚡', title:'Quick Calm', mins:3, tags:['Overwhelm','Anxiety'],
+      script: [
+        "Find a comfortable position, either sitting or lying down. Close your eyes if you feel comfortable doing so.",
+        "Take a slow, deep breath in through your nose... and gently release through your mouth. Let your shoulders drop.",
+        "Notice any tension in your body right now. You don't need to fix it — just notice it, like a kind observer.",
+        "With each exhale, imagine releasing a little of that tension. You are safe in this moment.",
+        "Your mind may wander — and that's completely okay. That's just your ADHD brain doing its thing. Gently come back.",
+        "Breathe in for 4... hold for 2... breathe out for 6. Again. In... hold... out.",
+        "You are doing great. Right now, nothing else needs your attention. Just this breath.",
+        "With each breath, your nervous system is settling. Your body knows how to find calm.",
+        "Take one last deep breath in... fill your lungs completely... and slowly release everything.",
+        "When you're ready, gently open your eyes. You've given yourself a gift — 3 minutes of peace. 🌟"
+      ]
+    },
+    {
+      id:'focus', icon:'🎯', title:'Focus Prep', mins:5, tags:['Focus','Productivity'],
+      script: [
+        "Settle into your seat. You're about to prime your brain for focused work.",
+        "Close your eyes and take three deep breaths. With each exhale, release distractions.",
+        "Imagine your mind as a still lake. Thoughts may ripple across the surface — let them pass without grabbing onto them.",
+        "Bring to mind the task you're about to work on. Not with stress, but with calm curiosity.",
+        "Say to yourself: 'I can do one small thing. Just one.' That's all that's required.",
+        "Notice your body in the chair. Feel the ground beneath your feet. You are grounded and present.",
+        "Your brain is capable of amazing things. ADHD makes some things harder — and some things extraordinary.",
+        "Visualise yourself starting the task easily. Just opening it, just beginning. That's all.",
+        "When thoughts try to pull you away during work, you'll remember this feeling of calm intention.",
+        "Take one energizing breath in... and exhale slowly. Open your eyes. You're ready. Let's go. 🚀"
+      ]
+    },
+    {
+      id:'body', icon:'🫁', title:'Body Scan', mins:10, tags:['Grounding','Relaxation'],
+      script: [
+        "Lie down or sit comfortably. Allow your body to be completely supported.",
+        "Close your eyes. Take three slow, gentle breaths. Let your body soften with each exhale.",
+        "Bring your awareness to the top of your head. Notice any sensations — tingling, pressure, warmth — without judgment.",
+        "Let your awareness drift slowly down to your forehead. Soften the muscles between your eyebrows.",
+        "Notice your eyes, your cheeks, your jaw. If you're holding tension here, invite it to release on your next exhale.",
+        "Move your awareness down your neck and into your shoulders. This is where many ADHD bodies carry stress.",
+        "With a deep breath, let your shoulders drop. Imagine the tension melting down your arms and out through your fingertips.",
+        "Bring attention to your chest. Feel it rise and fall. Your heart is working for you every moment.",
+        "Scan your belly — where emotions often live. Notice any tightness. Breathe into that space.",
+        "Continue down through your hips, your thighs. Let gravity hold your lower body.",
+        "Feel your calves, your ankles, your feet. All the way to your toes.",
+        "Now, hold your whole body in awareness at once. Notice the aliveness in you right now.",
+        "You are completely here. Completely whole. ADHD and all. This moment is enough.",
+        "Take a final deep breath in... and release slowly. When you're ready, gently return. 🌿"
+      ]
+    },
+    {
+      id:'compassion', icon:'💜', title:'Self-Compassion', mins:7, tags:['ADHD Shame','Emotions'],
+      script: [
+        "Find a comfortable position and gently close your eyes. Place one hand on your heart.",
+        "Take a slow breath in... and out. Feel the warmth of your own hand against your chest.",
+        "Think of a moment recently when you struggled because of ADHD. Maybe you forgot something, or couldn't start a task.",
+        "Notice what feelings come up. Let them be there — don't push them away. They're valid.",
+        "Now imagine a dear friend going through the same struggle. What would you say to them?",
+        "You'd probably say: 'It's okay. You're not broken. This is genuinely hard for you.'",
+        "Say those same words to yourself now. Silently or aloud: 'It's okay. I'm not broken. This is genuinely hard.'",
+        "ADHD is not a character flaw. It's a neurological difference. You didn't choose it.",
+        "You have worked incredibly hard just to get to where you are today. That deserves recognition.",
+        "Breathe in kindness... breathe out self-criticism. Breathe in understanding... breathe out shame.",
+        "You are worthy of compassion — especially from yourself. You always have been. 💜"
+      ]
+    },
+    {
+      id:'evening', icon:'🌙', title:'Evening Wind Down', mins:10, tags:['Sleep','Relaxation'],
+      script: [
+        "It's time to let go of this day. Find a comfortable position in your bed or a cozy chair.",
+        "Close your eyes. Take a slow, deep breath in through your nose... and a long, gentle exhale through your mouth.",
+        "Let your body begin to grow heavy. Feel the support of whatever you're lying or sitting on.",
+        "Breathe in for 4 counts... hold for 2... breathe out for 8. This long exhale activates your rest system.",
+        "Think of one thing — just one — that went okay today. It doesn't have to be big. Maybe you drank water. Maybe you tried.",
+        "With each breath, your body temperature drops slightly. Your mind begins to slow.",
+        "If worries or tomorrow's tasks enter your mind, gently say: 'I'll meet you tomorrow. Tonight is for rest.'",
+        "Feel your face relax. Your forehead. Your jaw. Your neck and shoulders melting into softness.",
+        "Your ADHD brain worked hard today. It deserves rest. Give it permission to switch off.",
+        "Continue breathing slowly... in... and out... Let the day go. Let everything go.",
+        "You are safe. You are enough. Sleep will come. 🌙 Rest now."
+      ]
+    },
+    {
+      id:'morning', icon:'☀️', title:'Morning Energy', mins:5, tags:['Morning','Motivation'],
+      script: [
+        "Good morning. Before you reach for your phone, take a moment just for yourself.",
+        "Sit up gently. Take a big breath in through the nose, filling your lungs completely...",
+        "And breathe out powerfully through your mouth. Do that again — big inhale... powerful exhale.",
+        "Roll your shoulders back. Sit tall. Your posture signals your brain: 'I'm ready.'",
+        "Today is a new start. Whatever happened yesterday does not define this day.",
+        "Think of one small thing you're looking forward to today. Even something tiny counts.",
+        "Your ADHD brain is about to wake up — and with it comes creativity, energy, and curiosity.",
+        "Set one intention for today. Not a long list — just ONE thing. Say it to yourself now.",
+        "Take a final energizing breath: breathe in for 4... hold for 4... breathe out for 4.",
+        "Open your eyes. You're ready. Today is yours. ☀️ Let's make it count."
+      ]
+    }
+  ],
+  setAmbient(type) {
+    this.ambient = type;
+    document.querySelectorAll('.sound-btns .snd-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('ms'+type.charAt(0).toUpperCase()+type.slice(1))?.classList.add('active');
+    if (this.playing !== null) {
+      Audio.stopAmbient();
+      if (type!=='none') Audio.startAmbient(type);
+    }
+  },
+  render() {
+    const list = document.getElementById('medList');
+    list.innerHTML = this.sessions.map(s=>`
+      <div class="med-card" id="med-${s.id}">
+        <div class="med-header">
+          <div class="med-icon">${s.icon}</div>
+          <div class="med-info">
+            <div class="med-title">${s.title}</div>
+            <div class="med-meta">
+              <span>⏱ ${s.mins} min</span>
+              ${s.tags.map(t=>`<span class="chip chip-pri" style="padding:2px 8px;font-size:.65rem">${t}</span>`).join('')}
+            </div>
+          </div>
+          <button class="med-btn" onclick="Med.toggle('${s.id}',event)" title="Play">▶</button>
+        </div>
+        <div class="med-script" id="script-${s.id}">
+          <div class="progress-bar"><div class="progress-fill" id="prog-${s.id}" style="width:0%"></div></div>
+          <p id="scriptText-${s.id}" style="margin-top:8px"></p>
+        </div>
+      </div>`).join('');
+  },
+  toggle(id, e) {
+    if (e) e.stopPropagation();
+    if (this.playing === id) { this.stopCurrent(); return; }
+    this.stopCurrent();
+    this.play(id);
+  },
+  play(id) {
+    this.playing = id;
+    const s = this.sessions.find(x=>x.id===id);
+    if (!s) return;
+    const card = document.getElementById('med-'+id);
+    const scriptEl = document.getElementById('script-'+id);
+    card.classList.add('playing');
+    scriptEl.classList.add('show');
+    card.querySelector('.med-btn').textContent = '⏹';
+    if (this.ambient !== 'none') Audio.startAmbient(this.ambient);
+    if (Settings.sound) Audio.bell(396);
+    let idx = 0;
+    const stepDur = (s.mins * 60 * 1000) / s.script.length;
+    const show = () => {
+      if (this.playing !== id) return;
+      document.getElementById('scriptText-'+id).textContent = s.script[idx] || '';
+      const pct = ((idx+1)/s.script.length*100).toFixed(0);
+      document.getElementById('prog-'+id).style.width = pct+'%';
+      idx++;
+      if (idx < s.script.length) {
+        this.playInterval = setTimeout(show, stepDur);
+      } else {
+        setTimeout(()=>this.done(id), stepDur);
+      }
+    };
+    show();
+  },
+  stopCurrent() {
+    if (!this.playing) return;
+    clearTimeout(this.playInterval);
+    const old = this.playing;
+    this.playing = null;
+    Audio.stopAmbient();
+    const card = document.getElementById('med-'+old);
+    if (card) {
+      card.classList.remove('playing');
+      card.querySelector('.med-btn').textContent = '▶';
+      document.getElementById('script-'+old)?.classList.remove('show');
+    }
+  },
+  done(id) {
+    this.stopCurrent();
+    if (Settings.sound) { Audio.success(); Audio.bell(528); }
+    App.addPoints(25);
+    App.showToast('🧘 Meditation complete! +25 pts');
+    App.checkDailyGoal('meditate');
+  }
+};
+// ─── AI CHAT ──────────────────────────────────────────────────
+const Chat = {
+  history: [],
+  KB: [
+    {p:/^(hi|hello|hey|sup|good\s?(morning|afternoon|evening)|howdy)/i,
+     r:"Hi there! 👋 I'm your ADHD companion — always free, always here. What's on your mind? You can ask me about focus strategies, emotions, sleep, relationships, or anything ADHD-related.",
+     s:["What is ADHD exactly?","I can't focus today","Help me calm down","I'm feeling overwhelmed"]},
+    {p:/what.*(is|are|means?).*(adhd|add)|explain adhd|tell me about adhd/i,
+     r:"**ADHD (Attention-Deficit/Hyperactivity Disorder)** is a neurodevelopmental condition — meaning your brain is wired differently, not broken.\n\n🧠 **Key facts:**\n• Affects dopamine & norepinephrine systems (reward & focus)\n• Makes executive function harder: planning, starting, switching tasks\n• Three types: Inattentive (ADD), Hyperactive-Impulsive, Combined\n• Adults absolutely have ADHD — many go undiagnosed for decades\n• It's strongly genetic — runs in families\n\nYou are NOT lazy. Your brain has a different operating system. 💜",
+     s:["What are ADHD symptoms?","How is ADHD diagnosed?","ADHD in adults","Inattentive vs hyperactive"]},
+    {p:/symptom|sign.*(adhd|add)|do i have adhd/i,
+     r:"**Common ADHD symptoms include:**\n\n**Inattentive type:**\n• Trouble sustaining focus on boring tasks\n• Losing things constantly\n• Forgetting daily tasks\n• Mind wandering in conversations\n• Difficulty following through on tasks\n\n**Hyperactive-Impulsive:**\n• Restlessness, fidgeting\n• Talking excessively\n• Interrupting others\n• Acting before thinking\n\n**Both types often include:**\n• Time blindness\n• Emotional dysregulation\n• Hyperfocus on interesting things\n• Sleep problems\n\n⚠️ Only a professional can diagnose ADHD. If you recognise these, consider seeking an evaluation.",
+     s:["What is time blindness?","What is hyperfocus?","How do I get diagnosed?","Emotional dysregulation explained"]},
+    {p:/hyperfocus|too focused|can.t stop/i,
+     r:"**Hyperfocus** is one of ADHD's paradoxes — you CAN focus intensely, but only on things that activate your brain's reward system.\n\n✨ **Why it happens:** When something is interesting, novel, or challenging enough, your brain floods with dopamine and you enter a deep focus state.\n\n🛠️ **How to work with it:**\n• Use hyperfocus intentionally — schedule interesting tasks\n• Set alarms to break out of it (ADHD time blindness + hyperfocus = 3 hours vanished)\n• Use it for deep work sessions\n• Create artificial urgency or interest for boring tasks\n\nHyperfocus can be your greatest superpower when directed well! 🚀",
+     s:["How to use hyperfocus productively","Time blindness tips","Focus strategies for ADHD","ADHD and creativity"]},
+    {p:/can.t focus|lose focus|distract|attention|no focus|trouble focusing/i,
+     r:"Struggling to focus is the hallmark of ADHD — and it's neurological, not personal failure.\n\n🧰 **Evidence-based focus strategies:**\n\n**Environment:**\n• Remove visual clutter from your workspace\n• Use noise-canceling headphones or background music (lo-fi, brown noise)\n• Work in different locations for novelty\n\n**Task approach:**\n• Start with the SMALLEST possible step (open the doc, just write one sentence)\n• Use the Pomodoro technique (try the Focus Timer in this app!)\n• Body doubling — work alongside someone else\n\n**Brain chemistry:**\n• Exercise first — produces natural dopamine\n• Stay hydrated — dehydration worsens ADHD significantly\n• Avoid ultra-processed food before focus tasks\n\nWhich of these would you like to explore more?",
+     s:["What is body doubling?","Pomodoro technique for ADHD","ADHD and exercise","What foods help ADHD?"]},
+    {p:/procrastinat|can.t start|getting started|avoidance|delay/i,
+     r:"ADHD procrastination is different from laziness — it's a **dopamine-driven activation problem**. Your brain literally struggles to initiate tasks that don't immediately activate the reward system.\n\n🔓 **Keys to unlock task initiation:**\n\n1. **Make it tiny** — 'Work on project' → 'Open document' → 'Write title' (can you say no to writing a title?)\n\n2. **Create urgency** — Tell a friend you'll send it in 30 mins. Set a dramatic timer.\n\n3. **Temptation bundling** — Only allow yourself your favorite podcast/snack WHILE doing the task.\n\n4. **Environmental design** — Put the thing you need in your way. Leave the document open. Put gym shoes by the door.\n\n5. **5-minute rule** — Commit to only 5 minutes. Starting IS the hard part; continuing is easier.\n\nWhat task are you avoiding right now? I can help you break it down. 🔨",
+     s:["Help me break down a task","What is temptation bundling?","ADHD and motivation","Task initiation strategies"]},
+    {p:/time blind|lose track.*time|time management|running late|always late/i,
+     r:"**Time blindness** is a core ADHD symptom — your brain has a genuinely impaired sense of time passing. It's not rudeness or disorganization; it's neurological.\n\n⏰ **Strategies that actually work:**\n\n• **Make time visible:** Use analog clocks, Time Timer app, or physical countdowns — not just digital clocks\n• **Add transition time:** If you think something takes 10 mins, schedule 25\n• **External time anchors:** Set multiple alarms ('leave in 30 mins', 'leave in 15 mins', 'LEAVE NOW')\n• **Time blocking:** Assign tasks to specific time slots, not just a to-do list\n• **The 'time until' exercise:** Practice estimating durations and checking reality\n• **Reward punctuality:** Build in something nice right after you arrive on time\n\nTime blindness is one of the most frustrating ADHD symptoms, and it's also one of the most manageable with the right systems.",
+     s:["How to set up ADHD-friendly routines","ADHD and organization tips","Morning routine for ADHD","App reminders and systems"]},
+    {p:/overwhelm|too much|can.t cope|shut down|freeze|paralyzed/i,
+     r:"ADHD overwhelm is real and physical — your nervous system floods and executive function shuts down completely. This is sometimes called ADHD paralysis.\n\n🆘 **When you're overwhelmed right now:**\n\n1. **Breathe first** — Use the Breathing section of this app. Box breathing (4-4-4-4) resets your nervous system in minutes.\n\n2. **Grounding** — Name 5 things you can see, 4 you can touch, 3 you can hear. This interrupts the freeze response.\n\n3. **One thing only** — Ask yourself: 'What is the ONE smallest thing I could do right now?' Just one. Not a list.\n\n4. **Body first** — Get water, move your body, change rooms. Physical movement breaks the mental freeze.\n\n5. **Permission to not** — Sometimes overwhelm means your capacity is exceeded. It's okay to reduce the list.\n\nWould you like to try a guided breathing exercise right now?",
+     s:["Start a breathing exercise","ADHD meltdown vs. overwhelm","How to prioritize when everything feels urgent","Emotional regulation strategies"]},
+    {p:/emotion|angry|mood swing|irritab|frustrat|RSD|rejection sensitive|sensitivity/i,
+     r:"**Emotional dysregulation** is one of the most underrecognized ADHD symptoms. The ADHD brain processes emotions more intensely and takes longer to regulate them.\n\n💜 **Rejection Sensitive Dysphoria (RSD)** deserves special mention:\n• Extreme emotional pain triggered by perceived rejection, criticism, or failure\n• Can feel like your world is ending — even from minor events\n• Affects ~99% of people with ADHD\n• It is NEUROLOGICAL, not 'being too sensitive'\n\n🧰 **Emotional regulation strategies:**\n\n• **Pause before responding** — ADHD impulsivity + big emotions = regretted words. Build in a pause.\n• **Name the emotion** — 'I notice I'm feeling rejected right now.' Naming reduces intensity.\n• **Physical discharge** — Run, jump, squeeze ice — physical movement releases emotional energy\n• **Self-compassion** — Try the Self-Compassion meditation in this app 💜\n• **Therapy** — DBT (Dialectical Behaviour Therapy) is highly effective for ADHD emotional regulation\n\nYour emotions are valid. They're also amplified by your neurology.",
+     s:["What is RSD?","ADHD and anxiety","ADHD and anger","Self-compassion meditation"]},
+    {p:/sleep|insomnia|can.t sleep|tired|rest|bedtime/i,
+     r:"Sleep problems affect 73% of people with ADHD — it's not just bad habits, it's neurological.\n\n😴 **Why ADHD disrupts sleep:**\n• Delayed circadian rhythm (natural night-owl tendency)\n• Racing thoughts at bedtime\n• Difficulty transitioning from alertness to sleep\n• Hyperactivity/restlessness in bed\n• Stimulating activities or screens hijacking attention before bed\n\n🛠️ **What actually helps:**\n\n1. **Consistent wake time** — More important than bedtime. Wake at the same time every day.\n2. **Wind-down routine** — Start 1 hour before bed (our Evening Meditation is perfect for this)\n3. **Blue light off** — Screens off 45+ mins before sleep (ADHD brains are more sensitive to blue light)\n4. **'Brain dump' journaling** — Write everything on your mind before bed to quiet it\n5. **Cool, dark room** — ADHD bodies often run hot\n6. **Weighted blanket** — Many ADHDers find this deeply calming\n7. **White/brown noise** — Masks distracting sounds that ADHD brains hyperfocus on\n\nTry our Evening Wind Down meditation tonight!",
+     s:["Evening Wind Down meditation","ADHD and caffeine","Sleep hygiene for ADHD","Morning routine tips"]},
+    {p:/medication|meds|stimulant|ritalin|adderall|concerta|strattera|treatment/i,
+     r:"**ADHD medication basics** (general info — always consult your doctor for personal advice):\n\n💊 **Stimulant medications** (most common, most studied):\n• Methylphenidate: Ritalin, Concerta, Vyvanse-MPH\n• Amphetamines: Adderall, Vyvanse, Dexedrine\n• Work by increasing dopamine & norepinephrine availability\n• Effective for ~70-80% of people with ADHD\n\n💊 **Non-stimulant options:**\n• Strattera (atomoxetine) — builds up over weeks\n• Qelbree (viloxazine) — newer option\n• Wellbutrin (bupropion) — off-label but commonly used\n• Intuniv/Kapvay (guanfacine/clonidine)\n\n✅ **Things to discuss with your doctor:**\n• Side effects, duration of action\n• Impact on sleep and appetite\n• Medication holidays\n• Finding the right dose\n\n⚠️ Medication works best combined with behavioral strategies, therapy, and lifestyle factors. It's one tool, not the only tool.\n\nIs there a specific aspect of treatment you'd like to discuss?",
+     s:["ADHD without medication","Behavioral strategies for ADHD","Talk to doctor about ADHD","Natural ADHD remedies"]},
+    {p:/natural|no medication|without meds|supplement|omega|fish oil|diet/i,
+     r:"Many people manage ADHD effectively without medication, or use non-medication strategies alongside meds.\n\n🌿 **Evidence-supported natural approaches:**\n\n**Exercise (strongest evidence):**\n• Aerobic exercise = natural stimulant medication\n• Increases dopamine, norepinephrine, serotonin\n• Even 20 mins/day shows measurable ADHD improvement\n• Running, swimming, cycling especially effective\n\n**Nutrition:**\n• High-protein breakfast stabilizes dopamine\n• Reduce simple carbs (blood sugar spikes worsen focus)\n• Omega-3 fatty acids (fish oil, flaxseed) — moderate evidence for ADHD benefit\n• Stay hydrated — dehydration severely impacts ADHD symptoms\n• Limit artificial dyes and additives (controversial but worth trying)\n\n**Supplements (some evidence):**\n• Omega-3 (EPA/DHA) — most supported\n• Zinc, Iron, Magnesium — if deficient\n• Vitamin D\n• Always discuss supplements with a healthcare provider\n\n**Mind-body practices:**\n• Mindfulness meditation (research shows 8 weeks improves ADHD symptoms)\n• Yoga\n• Martial arts\n\nThis app's breathing and meditation features support all of these!",
+     s:["Exercise and ADHD","ADHD diet tips","Mindfulness for ADHD","Sleep for ADHD"]},
+    {p:/relation|partner|friend|social|dating|marriage|communicat/i,
+     r:"ADHD significantly impacts relationships — and not because people with ADHD don't care. Often they care deeply.\n\n💑 **Common relationship challenges with ADHD:**\n• Forgetting important things (birthdays, conversations) — hurts partners\n• Zoning out during conversations (not lack of interest!)\n• Emotional dysregulation causing arguments\n• Inconsistency — great on exciting days, struggles on routine days\n• Rejection Sensitive Dysphoria causing overreaction to criticism\n• Impulsive spending/decisions affecting partner\n\n🛠️ **What helps:**\n\n• **Disclose your ADHD** — understanding changes everything\n• **External systems** — shared calendar, phone reminders for important dates\n• **Regular check-ins** — schedule dedicated conversation time\n• **ADHD couple's therapy** — therapists who understand ADHD make a huge difference\n• **Parallel play** — many ADHD relationships thrive when partners work in the same space\n• **Appreciate ADHD strengths** — creativity, empathy, humor, spontaneity\n\nRelationships with ADHD require more systems and communication — but they can be incredibly rich and loving.",
+     s:["ADHD and communication","Explaining ADHD to a partner","ADHD and friendship","ADHD strengths"]},
+    {p:/work|job|career|workplace|boss|coworker|productiv|professional/i,
+     r:"ADHD in the workplace is a complex topic — it's both a significant challenge and the source of some people's greatest professional strengths.\n\n💼 **Common workplace challenges:**\n• Meeting deadlines consistently\n• Long meetings (painful for ADHD brains)\n• Paperwork and administrative tasks\n• Open-plan offices (distraction overload)\n• Remembering verbal instructions\n• Starting long-term projects without urgency\n\n✅ **Strategies that work:**\n\n• **Request accommodations** — many countries legally require employers to provide reasonable adjustments\n• **Written communication** — ask for instructions via email/text for better retention\n• **Scheduled focus blocks** — block calendar for deep work\n• **Task management system** — Trello, Notion, or even sticky notes\n• **Body doubling** — virtual coworking with peers\n• **Find your peak performance window** — schedule important work for your best brain hours\n\n🌟 **ADHD career superpowers:**\n• High-pressure roles where urgency naturally helps\n• Creative fields (entrepreneurship, design, arts)\n• Crisis management, emergency medicine, journalism\n• Roles with variety and novelty",
+     s:["ADHD in school","Workplace accommodations","ADHD and entrepreneurship","Time management at work"]},
+    {p:/school|study|learn|student|exam|homework|college|university/i,
+     r:"ADHD and education have a complicated relationship — schools are often designed for brains that aren't ADHD.\n\n📚 **Study strategies for ADHD:**\n\n**Environment:**\n• Study in varied locations to maintain novelty\n• Library or café over bedroom\n• Background music (lo-fi hip-hop, classical, brown noise)\n\n**Study methods:**\n• Active recall > passive re-reading (flashcards, practice tests)\n• Pomodoro technique — 25 min focus, 5 min break (try our Focus Timer!)\n• Teach concepts to someone else or explain them aloud\n• Color-code notes\n\n**Organization:**\n• Digital calendars with phone alerts for ALL deadlines\n• Break assignments into calendar-blocked tasks\n• Submit work early (removes the procrastination-urgency trap)\n\n**Accommodations to request:**\n• Extended time on tests\n• Reduced distraction testing environment\n• Note-taking assistance\n• Flexible deadlines\n• Recording lectures\n\nAsk your school's disability services office — these are rights, not charity.",
+     s:["Pomodoro for studying","ADHD and test anxiety","Getting accommodations","ADHD and reading difficulties"]},
+    {p:/strengths?|superpower|good.*adhd|adhd.*good|positive.*adhd|gift/i,
+     r:"Yes — ADHD comes with real challenges AND genuine strengths. 🌟\n\n**Common ADHD superpowers:**\n\n🚀 **Hyperfocus** — When engaged, intense concentration that neurotypicals can't match\n\n🎨 **Creativity** — Pattern-recognition, novel thinking, non-linear problem solving\n\n⚡ **Energy** — High drive and enthusiasm for interesting projects\n\n🔥 **Thriving under pressure** — Urgency activates ADHD brains like rocket fuel\n\n🤝 **Empathy** — Many ADHDers have heightened emotional sensitivity and deep empathy\n\n🎲 **Risk tolerance** — More willing to take calculated risks and start new things\n\n💡 **Entrepreneurial thinking** — ADHD is highly overrepresented among successful entrepreneurs\n\n🔍 **Crisis navigation** — Ability to think fast and act decisively under stress\n\nThink of ADHD not as a deficit but as a different cognitive profile — one that in the right environment and role becomes an enormous advantage.",
+     s:["Famous people with ADHD","ADHD and entrepreneurship","How to use hyperfocus","ADHD career strengths"]},
+    {p:/anxious|anxiety|worry|panic|stress|nervous/i,
+     r:"ADHD and anxiety are extremely common partners — about 50% of people with ADHD also have an anxiety disorder.\n\n😰 **Why they co-occur:**\n• Repeated ADHD-related failures create anticipatory anxiety\n• Difficulty predicting outcomes creates chronic worry\n• Emotional dysregulation amplifies anxious responses\n• Feeling chronically behind or disorganised causes stress\n\n💆 **ADHD-specific anxiety management:**\n\n1. **Distinguish ADHD from anxiety** — Is this avoidance (ADHD) or fear (anxiety)? They need different responses.\n\n2. **Reduce cognitive load** — Anxiety spikes when your brain is overloaded. Use lists, reminders, and systems to offload.\n\n3. **Breathe** — Box breathing and 4-7-8 are clinically proven to reduce acute anxiety (try them in this app!)\n\n4. **Address the ADHD** — Often, treating ADHD symptoms reduces anxiety significantly\n\n5. **Therapy** — CBT and DBT are effective for ADHD + anxiety\n\n6. **Movement** — Exercise is one of the most effective anxiety reducers available\n\nYour anxiety is valid. It's also manageable.",
+     s:["Breathing for anxiety","ADHD and depression","Self-compassion practice","When to seek professional help"]},
+    {p:/depress|sad|hopeless|worthless|give up|don.t care|unmotivat/i,
+     r:"I hear you. Depression alongside ADHD is very common — and it makes perfect sense when you think about the years of struggling in a world not built for your brain.\n\n💜 **ADHD and depression often feel like:**\n• Persistent exhaustion (the ADHD tax is draining)\n• 'Laziness' that's actually depression's anhedonia\n• Shame spirals from past failures\n• Hopelessness about ever being 'normal'\n\n**What helps:**\n\n• **Movement** — Even a 10-minute walk changes brain chemistry. Start there.\n• **Social connection** — Isolation worsens both ADHD and depression. Reach out to one person.\n• **Small wins** — Use this app's task list for tiny, achievable goals\n• **Self-compassion** — Try the self-compassion meditation. You deserve kindness.\n• **Professional support** — A therapist or psychiatrist familiar with ADHD can make a huge difference\n\n⚠️ **If you're having thoughts of self-harm**, please reach out to a crisis line:\n🇺🇸 988 Suicide & Crisis Lifeline: call or text **988**\n🌍 Crisis Text Line: text HOME to **741741**\n\nYou matter. Your struggles are real. Help exists.",
+     s:["How to find an ADHD therapist","Self-compassion meditation","Small wins system","ADHD and shame"]},
+    {p:/crisis|suicid|self.harm|hurt myself|want to die|end it/i,
+     r:"I'm really glad you're talking, and I want to make sure you get real support right now.\n\n🆘 **Please reach out to a crisis line immediately:**\n\n🇺🇸 **USA:** Call or text **988** (Suicide & Crisis Lifeline)\n🇬🇧 **UK:** Call **116 123** (Samaritans)\n🇦🇺 **Australia:** Call **13 11 14** (Lifeline)\n🌍 **International:** text HOME to **741741** (Crisis Text Line)\n\nThese are free, confidential, and available 24/7. Real humans who understand will answer.\n\n💜 You are not a burden. You are not a failure. ADHD makes life genuinely harder — and you deserve support, not shame.\n\nPlease reach out to someone right now. You matter.",
+     s:[]},
+    {p:/dopamine|reward|motivation|bored|boring/i,
+     r:"ADHD is fundamentally a **dopamine regulation disorder** — your brain doesn't produce or use dopamine as efficiently, which is why motivation and reward feel different for you.\n\n🧠 **Why this matters:**\n• Neurotypical brains: 'I should do this' = enough motivation\n• ADHD brains: 'I should do this' = nothing. Need: 'I WANT to, this is interesting, this is urgent, this is challenging'\n\n🎮 **Building a Dopamine Menu:**\nA list of quick dopamine-boosting activities for when your motivation crashes:\n- 5 min walk or dance break\n- Cold water on your face\n- A favourite snack\n- A quick creative activity\n- Calling a friend for 5 min\n- Watching a funny video\n\n🔄 **Task dopamine hacks:**\n• Gamify everything (points, streaks — this app does this!)\n• Pair boring tasks with something stimulating\n• Create artificial stakes ('I'll buy coffee if I finish this')\n• Work in new locations for novelty\n• Use timers to create urgency\n\nYour need for stimulation is not a flaw — it's your neurology. Work with it!",
+     s:["ADHD and interest-based motivation","Habit stacking for ADHD","Rewards system for adults","Gamification strategies"]},
+    {p:/tip|strateg|advice|help|what.*do|how.*deal|cope|manage/i,
+     r:"Here are some of the most effective ADHD management strategies:\n\n🎯 **Top 10 ADHD strategies:**\n\n1. **External systems** — Your brain can't hold everything. Use apps, alarms, physical reminders.\n\n2. **Body doubling** — Work alongside others (in person or virtually) for accountability.\n\n3. **Exercise daily** — Produces natural dopamine. Even 10-20 minutes makes a measurable difference.\n\n4. **Pomodoro technique** — Focused sprints (25 min) with breaks. Try the Focus Timer in this app!\n\n5. **Task breakdown** — Every task into micro-steps. The smaller, the better.\n\n6. **Dopamine menu** — Keep a list of quick, rewarding activities for energy dips.\n\n7. **Consistent sleep** — Sleep deprivation dramatically worsens ADHD symptoms.\n\n8. **Reduce decisions** — Routines, meal prep, laid-out clothes remove decision fatigue.\n\n9. **Self-compassion** — Shame spirals kill productivity. Kindness enables recovery.\n\n10. **Professional support** — Therapy (especially CBT or DBT) + medication evaluation if appropriate.\n\nWhich of these would you like to explore?",
+     s:["Pomodoro technique","Body doubling explained","ADHD and sleep","Emotional regulation"]},
+    {p:/thank|thanks|helpful|great|awesome|love.*app|good app/i,
+     r:"You're so welcome! 💜 You deserve support that actually understands how your brain works.\n\nRemember: every time you check in, use a tool, or just sit with your feelings — that's real self-care. You're doing better than you think.\n\nI'm always here whenever you need to talk. 🧠✨",
+     s:["What else can you help with?","Daily ADHD tips","Focus strategies","Meditation for ADHD"]}
+  ],
+  DEFAULT: [
+    "That's a great question about ADHD. While I may not have a specific answer for that exact phrase, I can help you with:\n\n• Focus & concentration strategies\n• Emotional regulation\n• Sleep & routines\n• Relationships & communication\n• Work & school tips\n• Coping with overwhelm\n• Understanding your ADHD brain\n\nWhat area would you like to explore?",
+    "I want to make sure I give you the most helpful answer. Could you tell me a bit more? For example, are you struggling with focus, emotions, relationships, sleep, work, or something else?",
+    "ADHD touches so many areas of life. I'm here to help with all of it. What specifically is on your mind right now? The more you share, the better I can help. 💜"
+  ],
+  init() {
+    const msgs = document.getElementById('chatMsgs');
+    msgs.innerHTML = '';
+    this.addMsg("Hi! 👋 I'm your ADHD companion. I understand how ADHD works — the good, the hard, and everything in between.\n\nAsk me anything: focus, emotions, sleep, relationships, medication, coping strategies — I'm here. 💜\n\nWhat's on your mind today?", 'ai',
+      ["I can't focus","I feel overwhelmed","ADHD coping strategies","Breathing exercise"]);
+  },
+  addMsg(text, role, suggestions=[]) {
+    const msgs = document.getElementById('chatMsgs');
+    const el = document.createElement('div');
+    el.className = 'msg msg-'+role;
+    el.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>').replace(/•/g,'&bull;');
+    msgs.appendChild(el);
+    if (suggestions.length) {
+      const sug = document.createElement('div');
+      sug.className = 'chat-suggestions';
+      sug.innerHTML = suggestions.map(s=>`<button class="sug-btn" onclick="Chat.sendText('${s.replace(/'/g,"\\'")}')">  ${s}</button>`).join('');
+      msgs.appendChild(sug);
+    }
+    msgs.scrollTop = msgs.scrollHeight;
+  },
+  sendText(text) {
+    document.getElementById('chatInput').value = text;
+    this.send();
+  },
+  send() {
+    const inp = document.getElementById('chatInput');
+    const text = inp.value.trim();
+    if (!text) return;
+    inp.value = '';
+    this.addMsg(text, 'user');
+    if (Settings.sound) Audio.click();
+    // Show typing
+    const msgs = document.getElementById('chatMsgs');
+    const typing = document.createElement('div');
+    typing.className = 'msg msg-ai msg-typing';
+    typing.innerHTML = '<div class="dot-typing"></div><div class="dot-typing"></div><div class="dot-typing"></div>';
+    msgs.appendChild(typing);
+    msgs.scrollTop = msgs.scrollHeight;
+    // Special actions
+    if (/breath|breathing exercise/i.test(text)) {
+      setTimeout(()=>{ typing.remove(); this.addMsg("Let's do that right now! 💨 I'm switching you to the Breathing section.",'ai'); setTimeout(()=>App.navigate('breathe'),1200); },800);
+      return;
+    }
+    if (/meditat/i.test(text)) {
+      setTimeout(()=>{ typing.remove(); this.addMsg("Opening the Meditation section for you! 🧘",'ai'); setTimeout(()=>App.navigate('meditate'),1200); },800);
+      return;
+    }
+    if (/focus timer|pomodoro/i.test(text)) {
+      setTimeout(()=>{ typing.remove(); this.addMsg("Starting the Focus Timer! 🎯",'ai'); setTimeout(()=>App.navigate('focus'),1200); },800);
+      return;
+    }
+    // Find knowledge base match
+    const match = this.KB.find(k=>k.p.test(text));
+    const delay = 800 + Math.random()*600;
+    setTimeout(()=>{
+      typing.remove();
+      if (match) {
+        this.addMsg(match.r, 'ai', match.s||[]);
+      } else {
+        const fallback = this.DEFAULT[Math.floor(Math.random()*this.DEFAULT.length)];
+        this.addMsg(fallback, 'ai', ["Focus strategies","Coping with overwhelm","ADHD and emotions","Sleep tips"]);
+      }
+    }, delay);
+  }
+};
+// ─── TRACK ──────────────────────────────────────────────────
+const Track = {
+  renderChart() {
+    const moods = Store.get('moods',[]);
+    const chart = document.getElementById('moodChart');
+    const days = [];
+    for(let i=6;i>=0;i--){
+      const d=new Date(); d.setDate(d.getDate()-i);
+      const ds=d.toDateString();
+      const dayMoods=moods.filter(m=>new Date(m.ts).toDateString()===ds);
+      const avg=dayMoods.length?dayMoods.reduce((a,b)=>a+b.val,0)/dayMoods.length:0;
+      days.push({label:['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()],avg});
+    }
+    const max=5;
+    chart.innerHTML=days.map(d=>`
+      <div class="bar-col">
+        <div class="bar" style="height:${d.avg?Math.round(d.avg/max*64)+4:4}px;background:${d.avg>=4?'var(--success)':d.avg>=3?'var(--pri)':d.avg>0?'var(--acc3)':'var(--card2)'}"></div>
+        <div class="bar-lbl">${d.label}</div>
+      </div>`).join('');
+  },
+  renderHistory() {
+    const moods = Store.get('moods',[]).slice(-20).reverse();
+    const hist = document.getElementById('moodHistory');
+    const emojis={5:'😄',4:'🙂',3:'😐',2:'😔',1:'😩'};
+    if(!moods.length){hist.innerHTML='<div class="empty-state" style="padding:20px"><div class="es-icon">📊</div><p>Log your mood from the Home tab to see history here</p></div>';return;}
+    hist.innerHTML=moods.map(m=>`
+      <div class="mh-item">
+        <div class="mh-emoji">${emojis[m.val]||'😐'}</div>
+        <div class="mh-info">
+          <div class="mh-mood">${m.label||'Unknown'}</div>
+          <div class="mh-date">${new Date(m.ts).toLocaleString()}</div>
+          ${m.note?`<div class="mh-note">"${m.note.replace(/</g,'&lt;')}"</div>`:''}
+        </div>
+      </div>`).join('');
+  },
+  clearHistory() {
+    if(confirm('Clear mood history?')){ Store.del('moods'); this.renderChart(); this.renderHistory(); App.updateStats(); }
+  }
+};
+// ─── GOALS ──────────────────────────────────────────────────
+const Goals = {
+  dailyGoals: [
+    {id:'mood', label:'Log your mood', icon:'😊', target:1, pts:5},
+    {id:'focus', label:'Complete a focus session', icon:'🎯', target:1, pts:20},
+    {id:'breathe', label:'Do a breathing exercise', icon:'💨', target:1, pts:15},
+    {id:'meditate', label:'Meditate today', icon:'🧘', target:1, pts:25},
+    {id:'task_done', label:'Complete 3 tasks', icon:'✅', target:3, pts:30},
+    {id:'task_add', label:'Plan tomorrow\'s tasks', icon:'📝', target:1, pts:10},
+  ],
+  badges: [
+    {id:'first_focus', label:'First Focus', icon:'🎯', check:s=>s.sessions>=1},
+    {id:'focus5', label:'Focus Pro', icon:'🏅', check:s=>s.sessions>=5},
+    {id:'focus20', label:'Focus Master', icon:'🥇', check:s=>s.sessions>=20},
+    {id:'mood3', label:'Mood Tracker', icon:'📊', check:s=>s.moodDays>=3},
+    {id:'mood7', label:'Consistency', icon:'🔥', check:s=>s.streak>=7},
+    {id:'breathe3', label:'Breath Work', icon:'💨', check:s=>s.breathes>=3},
+    {id:'meditate1', label:'Mindful', icon:'🧘', check:s=>s.meditates>=1},
+    {id:'meditate5', label:'Meditator', icon:'☮️', check:s=>s.meditates>=5},
+    {id:'tasks10', label:'Task Crusher', icon:'✅', check:s=>s.tasksDone>=10},
+    {id:'tasks50', label:'Productivity God', icon:'⚡', check:s=>s.tasksDone>=50},
+    {id:'points100', label:'Century Club', icon:'💯', check:s=>s.points>=100},
+    {id:'points500', label:'Point Master', icon:'⭐', check:s=>s.points>=500},
+  ],
+  tick(type) {
+    const today = new Date().toDateString();
+    const progress = Store.get('dailyProgress',{});
+    if(progress.date!==today) { Store.set('dailyProgress',{date:today}); }
+    const p = Store.get('dailyProgress',{date:today});
+    p[type] = (p[type]||0)+1;
+    Store.set('dailyProgress',p);
+    // Check goals
+    this.dailyGoals.forEach(g=>{
+      if(!p['done_'+g.id] && (p[g.id]||0)>=g.target){
+        p['done_'+g.id]=true;
+        Store.set('dailyProgress',p);
+        App.addPoints(g.pts);
+        App.showToast(`🎉 Goal complete: ${g.label}! +${g.pts} pts`);
+        if(Settings.sound) Audio.success();
+      }
+    });
+    this.render();
+  },
+  render() {
+    const today = new Date().toDateString();
+    const p = Store.get('dailyProgress',{});
+    const list = document.getElementById('goalList');
+    list.innerHTML = this.dailyGoals.map(g=>{
+      const cur = p.date===today?(p[g.id]||0):0;
+      const done = p.date===today && p['done_'+g.id];
+      const pct = Math.min(100, Math.round(cur/g.target*100));
+      return `<div class="goal-item">
+        <div class="goal-header">
+          <span>${g.icon} ${g.label}</span>
+          <span class="goal-prog ${done?'chip chip-success':'chip'}">${done?'✓ Done':cur+'/'+g.target}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;${done?'background:var(--success)':''}"></div></div>
+      </div>`;
+    }).join('');
+    this.renderBadges();
+    document.getElementById('goalsStreak').textContent = App.calcStreak();
+    document.getElementById('goalsPoints').textContent = '⭐ '+(Store.get('points',0))+' points';
+  },
+  checkBadges() {
+    const stats = {
+      sessions: Store.get('sessions',[]).length,
+      moodDays: [...new Set(Store.get('moods',[]).map(m=>new Date(m.ts).toDateString()))].length,
+      streak: App.calcStreak(),
+      breathes: Store.get('breathes',0),
+      meditates: Store.get('meditates',0),
+      tasksDone: Store.get('tasks',[]).filter(t=>t.done).length,
+      points: Store.get('points',0)
+    };
+    const earned = Store.get('badges',[]);
+    this.badges.forEach(b=>{
+      if(!earned.includes(b.id) && b.check(stats)){
+        earned.push(b.id);
+        Store.set('badges',earned);
+        App.showToast('🏆 Badge earned: '+b.label+'!');
+        if(Settings.sound) Audio.success();
+      }
+    });
+    this.renderBadges();
+  },
+  renderBadges() {
+    const earned = Store.get('badges',[]);
+    const grid = document.getElementById('badgeGrid');
+    grid.innerHTML = this.badges.map(b=>`
+      <div class="badge-item ${earned.includes(b.id)?'earned':''}" title="${b.label}">
+        <div class="badge-emoji">${b.icon}</div>
+        <div class="badge-name">${b.label}</div>
+      </div>`).join('');
+  },
+  reset() {
+    Store.del('dailyProgress');
+    this.render();
+    App.showToast('Daily goals reset!');
+  }
+};
+// ─── INIT ──────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', ()=>App.init());
+</script>
+</body>
+</html>
